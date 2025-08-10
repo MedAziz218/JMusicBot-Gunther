@@ -4,9 +4,10 @@ services:
     container_name: jmusicbot
     environment:
       - BOT_GITHUB=SeVile/MusicBot
-      - BOT_VERSION=0.4.3.9
+      - BOT_VERSION=latest
     volumes:
       - '$PWD/config:/config'
+      - '$PWD/app:/app'
     restart: unless-stopped
     network_mode: 'service:warp'
     depends_on:

@@ -1,3 +1,9 @@
-data/**
-config/serversettings.json
 .compose.yaml.swp
+data/
+config/**
+app/**
+
+
+!config/config.txt
+!app/run_bot.sh
+
