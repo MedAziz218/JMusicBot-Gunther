@@ -1,10 +1,11 @@
+
 services:
   jmusicbot:
     image: ghcr.io/yojoshb/jmusicbot-docker
     container_name: jmusicbot
     environment:
       - BOT_GITHUB=SeVile/MusicBot
-      - BOT_VERSION=latest
+      - BOT_VERSION=0.4.4.0
     volumes:
       - '$PWD/config:/config'
       - '$PWD/app:/app'
@@ -28,5 +29,7 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
       - net.ipv4.conf.all.src_valid_mark=1
+    device_cgroup_rules:
+      - 'c 10:200 rwm'
     volumes:
       - './data:/var/lib/cloudflare-warp'

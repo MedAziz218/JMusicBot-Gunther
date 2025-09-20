@@ -4,6 +4,6 @@ config/**
 app/**
 
 
-!config/config.txt
+!config/config.example.txt
 !app/run_bot.sh
 
