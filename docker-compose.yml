@@ -1,0 +1,17 @@
+services:
+  jmusicbot:
+    build: .
+    #image: ghcr.io/yojoshb/jmusicbot-docker
+
+    container_name: jmusicbot
+    environment:
+        # discord bot token and owner id
+      - BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - OWNER_ID=${DISCORD_OWNER_ID}
+        # github fork and release version (optional)
+      - BOT_GITHUB=${BOT_GITHUB:-noxianwill/MusicBot}
+      - BOT_VERSION=${BOT_VERSION:-v0.4.3-1.0-fixed}
+    volumes:
+      - './config:/config'
+      - './app:/app'
+    restart: unless-stopped

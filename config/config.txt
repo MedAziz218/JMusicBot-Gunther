@@ -12,15 +12,14 @@
 // This MUST be a bot token (user tokens will not work)
 // If you don't know how to get a bot token, please see the guide here:
 // https://github.com/jagrosh/MusicBot/wiki/Getting-a-Bot-Token
-
-token = BOT_TOKEN_HERE
-
-
+// !!! IMPORTANT: SET BOT_TOKEN IN .env FILE !!!!
+token = BOT_TOKEN
 // This sets the owner of the bot
 // This needs to be the owner's ID (a 17-18 digit number)
 // https://github.com/jagrosh/MusicBot/wiki/Finding-Your-User-ID
+// !!! IMPORTANT: SET OWNER_ID IN .env FILE !!!!
 
-owner = OWNER_ID_HERE
+owner = OWNER_ID
 
 
 // This sets the prefix for the bot
@@ -51,7 +50,7 @@ status = ONLINE
 // "Playing" status. Note that this will ONLY work if the bot is playing music on ONE guild;
 // if the bot is playing on multiple guilds, this will not work.
 
-songinstatus=true
+songinstatus=false
 
 
 // If you set this, the bot will also use this prefix in addition to

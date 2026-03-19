@@ -1,36 +1,56 @@
 #!/bin/bash
 
-# Get latest or specified tag version
-if [ "$BOT_VERSION" == "latest" ]; then
-  RELEASE_JSON=$(curl --silent "https://api.github.com/repos/${BOT_GITHUB}/releases/latest")
+# Define the expected filename based on the environment variable
+EXPECTED_JAR="JMusicBot-${BOT_VERSION}.jar"
+
+# 1. Check if we already have it
+if [ -f "$EXPECTED_JAR" ]; then
+    echo "--- Found $EXPECTED_JAR locally. Skipping GitHub API. ---"
 else
-  RELEASE_JSON=$(curl --silent "https://api.github.com/repos/${BOT_GITHUB}/releases/tags/${BOT_VERSION}")
+    echo "--- $EXPECTED_JAR not found. Starting Download Process ---"
+
+    # Determine API URL
+    if [ "$BOT_VERSION" = "latest" ]; then
+      API_URL="https://api.github.com/repos/${BOT_GITHUB}/releases/latest"
+    else
+      API_URL="https://api.github.com/repos/${BOT_GITHUB}/releases/tags/${BOT_VERSION}"
+    fi
+
+    # Fetch Release Data
+    RELEASE_JSON=$(curl --silent "$API_URL")
+
+    # Check for GitHub Rate Limits
+    if echo "$RELEASE_JSON" | grep -q "message"; then
+        echo "ERROR: GitHub API limit reached or version invalid."
+        echo "Full Response: $RELEASE_JSON"
+        exit 1
+    fi
+
+    # Extract Download URL
+    DOWNLOAD_URL=$(echo "$RELEASE_JSON" | grep -Po '"browser_download_url":\s*"\Khttps://[^"]*JMusicBot[^"]*\.jar' | head -n 1)
+
+    if [ -z "$DOWNLOAD_URL" ]; then
+        echo "ERROR: Could not find a .jar asset for version $BOT_VERSION"
+        exit 1
+    fi
+
+    echo "Downloading from: $DOWNLOAD_URL"
+    
+    # --show-progress: Forces the progress bar even in non-interactive shells
+    # --progress=dot:giga: Keeps logs clean by printing a dot for every MB/GB
+    if ! wget --show-progress --progress=dot:giga "$DOWNLOAD_URL" -O "$EXPECTED_JAR"; then
+        echo "ERROR: Download failed. Check your internet connection."
+        rm -f "$EXPECTED_JAR" # Remove partial download
+        exit 1
+    fi
+    
+    echo "--- Download Complete: $EXPECTED_JAR ---"
 fi
 
-# Check if the release JSON was fetched successfully
-if [ -z "$RELEASE_JSON" ] || echo "$RELEASE_JSON" | grep -q '"message": "Not Found"'; then
-  echo "Error: Could not find release for version '$BOT_VERSION'."
-  echo "Possible release tags for ${BOT_GITHUB}:"
-  curl --silent "https://api.github.com/repos/${BOT_GITHUB}/releases" | grep -Po '"tag_name":\s*"\K[^"]*' | head -n 10
-  exit 1
-fi
-
-VERSION_TAG=$(echo "$RELEASE_JSON" | grep -Po '"tag_name":\s*"\K[^"]*')
-ASSET_NAME=$(echo "$RELEASE_JSON" | grep -Po '"name":\s*"\KJMusicBot[^"]*\.jar')
-DOWNLOAD_URL=$(echo "$RELEASE_JSON" | grep -Po '"browser_download_url":\s*"\Khttps://[^"]*JMusicBot[^"]*\.jar')
-
-if [ -z "$ASSET_NAME" ] || [ -z "$DOWNLOAD_URL" ]; then
-  echo "Error: No matching asset found in release $VERSION_TAG."
-  exit 1
-fi
-
-echo -e "Downloading JMusicBot $VERSION_TAG"
-if [ ! -f "$ASSET_NAME" ]; then
-  if ! wget "$DOWNLOAD_URL" -O "$ASSET_NAME"; then
-    echo "Error: Failed to download $ASSET_NAME."
-    exit 1
-  fi
-fi
-
-echo -e "Starting JMusicBot $VERSION_TAG"
-java -Dnogui=true -Dconfig=/config/config.txt -jar "$ASSET_NAME"
+# 2. Run the Bot
+echo "--- Launching JMusicBot $EXPECTED_JAR---"
+java -Dtoken="${BOT_TOKEN}" \
+     -Downer=${OWNER_ID} \
+     -Dnogui=true \
+     -Dconfig=/config/config.txt \
+     -jar "$EXPECTED_JAR"

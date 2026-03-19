@@ -1,9 +1,6 @@
 .compose.yaml.swp
-data/
-config/**
+.warp_data/
 app/**
-
-
-!config/config.example.txt
+.env
 !app/run_bot.sh
 
